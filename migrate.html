@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex" />
+<title>Tagtelier｜データの引き継ぎ</title>
+<!--
+  旧アドレス（GitHub Pages）に置く「データを渡すだけ」のページ。
+  設計＝Ob_Claude/Decisions/2026-09-11-web版をCloudflareへ移行.md
+
+  🔴 このページは新アドレスの app.tagtelier.com にだけ応答する。
+     送信先を '*' にしたり、相手を確かめずに返したりすると、
+     第三者のサイトがこのページを開くだけで利用者のデータを取れてしまう。
+
+  🔴 隠しiframeからは呼ばれない（呼んでも意味がない）。
+     いまのブラウザは他サイトの中に置かれた枠のストレージを分離するので、
+     枠の中から見える localStorage は本物ではなく空の別領域になる。
+     ＝必ず「普通に開かれた窓（トップレベル）」として動く前提で書く。
+
+  🔴 GA・外部スクリプトを載せない。データをログや解析に送らない。
+-->
+<style>
+  body { font-family: system-ui, "Segoe UI", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+         margin: 0; padding: 24px 16px; background: #14161a; color: #e6e8ec; line-height: 1.8; }
+  main { max-width: 640px; margin: 0 auto; }
+  h1 { font-size: 18px; margin: 0 0 16px; }
+  p { margin: 0 0 12px; font-size: 14px; }
+  .muted { color: #98a0ad; font-size: 12px; }
+  .box { background: #1d2027; border: 1px solid #2c313a; border-radius: 8px; padding: 16px; margin: 16px 0; }
+  .ok { color: #7fd6a0; }
+  .ng { color: #ff9b9b; }
+  button { font: inherit; padding: 8px 16px; border-radius: 6px; border: 1px solid #3a4150;
+           background: #2a3040; color: #e6e8ec; cursor: pointer; }
+  button:hover { background: #333b4d; }
+  a { color: #8ab4ff; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Tagtelier｜データの引き継ぎ</h1>
+  <div class="box" id="status"><p>準備しています…</p></div>
+  <div class="box" id="manual" hidden>
+    <p><b>手動で引き継ぐ</b></p>
+    <p>下のボタンでファイルに書き出し、新しいアドレスの
+      <b>設定 &gt; データのバックアップ &gt; インポート</b> で読み込んでください。</p>
+    <p><button id="dl">データをファイルに書き出す</button></p>
+    <p class="muted">新しいアドレス：<a href="https://app.tagtelier.com/">https://app.tagtelier.com/</a></p>
+  </div>
+</main>
+<script>
+(function () {
+  'use strict';
+  var NEW_ORIGIN = 'https://app.tagtelier.com';
+  var KEY = 'tagtelier';
+  var REQ = 'tagtelier:migrate:request:v1';
+  var RES = 'tagtelier:migrate:response:v1';
+  var READY = 'tagtelier:migrate:ready:v1';
+
+  var statusEl = document.getElementById('status');
+  var manualEl = document.getElementById('manual');
+  var answered = false;
+  // 🔴 相手は「自分を開いた窓」だけ。開かれていなければ通信はしない（手動の書き出しだけ出す）。
+  var peer = window.opener || null;
+
+  function say(html, cls) {
+    statusEl.innerHTML = '<p class="' + (cls || '') + '">' + html + '</p>';
+  }
+
+  // ── 手元のデータを読む（読めない場合と空の場合を区別する）──
+  function read() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      return { status: raw === null ? 'empty' : 'ok', raw: raw };
+    } catch (e) {
+      return { status: 'unavailable', raw: null };   // プライベートモード等で読めない
+    }
+  }
+
+  var mine = read();
+
+  // ── 手動の書き出し（ポップアップが塞がれている人・自動でうまくいかない人向け）──
+  document.getElementById('dl').addEventListener('click', function () {
+    if (mine.status !== 'ok') { alert('このブラウザには引き継ぐデータがありません。'); return; }
+    var blob = new Blob([mine.raw], { type: 'application/json' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'tagtelier-backup.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+  });
+
+  // ── 自動の受け渡し ──
+  if (!peer) {
+    // 直接開かれた＝手動の案内だけ出す
+    if (mine.status === 'ok') {
+      say('このブラウザに保存されたデータが見つかりました。', 'ok');
+      manualEl.hidden = false;
+    } else if (mine.status === 'empty') {
+      say('このブラウザには引き継ぐデータがありません。そのまま新しいアドレスをお使いください。<br>'
+        + '<a href="' + NEW_ORIGIN + '/">' + NEW_ORIGIN + '/</a>');
+    } else {
+      say('このブラウザの保存領域を読み取れませんでした（プライベートモードなどの可能性があります）。', 'ng');
+    }
+    return;
+  }
+
+  window.addEventListener('message', function (event) {
+    if (answered) return;
+    // 🔴 相手の確認（どちらも必須）。origin にパスは含まれない。
+    if (event.origin !== NEW_ORIGIN) return;
+    if (event.source !== peer) return;
+    var req = event.data;
+    if (!req || req.type !== REQ) return;
+    if (typeof req.requestId !== 'string' || !/^[a-f0-9-]{36}$/i.test(req.requestId)) return;
+
+    answered = true;
+    // 🔴 送信先を固定する（'*' にしない）
+    peer.postMessage({ type: RES, requestId: req.requestId, status: mine.status, raw: mine.raw }, NEW_ORIGIN);
+
+    if (mine.status === 'ok') say('データを渡しました。この窓は閉じてかまいません。', 'ok');
+    else if (mine.status === 'empty') say('このブラウザには引き継ぐデータがありませんでした。');
+    else { say('保存領域を読み取れませんでした。', 'ng'); manualEl.hidden = false; }
+  });
+
+  // 用意ができたことを知らせる（送信先を固定しているので、別のサイトが開いても届かない）
+  say('新しいアドレスと通信しています…');
+  peer.postMessage({ type: READY }, NEW_ORIGIN);
+
+  // 一定時間返事が来なければ手動に切り替える
+  setTimeout(function () {
+    if (answered) return;
+    say('自動の引き継ぎができませんでした。', 'ng');
+    manualEl.hidden = false;
+  }, 8000);
+})();
+</script>
+</body>
+</html>

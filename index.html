@@ -1,34 +1,52 @@
 <!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Tagtelier</title>
-  <!-- ファビコン＝TTロゴ（assets/icons のアプリアイコンを public/ へ複製）。base='./' なので相対で書く（file://のデスクトップ版でも解決） -->
-  <link rel="icon" type="image/png" sizes="256x256" href="./favicon.png" />
-  <link rel="shortcut icon" href="./favicon.ico" />
-  <link rel="apple-touch-icon" href="./favicon.png" />
-  <script type="module" crossorigin src="./assets/index-D9Z1ZrdK.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-CaR1Numz.css">
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-Q9FYW14CYF"></script>
-  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-Q9FYW14CYF');</script>
-  <meta name="description" content="サムネイルを見ながらタグを選ぶだけで、画像生成用のプロンプトを組み立てられる無料ツール。シーンディレクターで背景・衣装・ポーズを自動で組み合わせることもできます。ブラウザだけで動き、登録は不要です。" />
-  <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="Tagtelier" />
-  <meta property="og:locale" content="ja_JP" />
-  <meta property="og:url" content="https://k4ow13gt-eng.github.io/tagtelier/" />
-  <meta property="og:title" content="Tagtelier｜画像生成プロンプトをタグで組み立てる" />
-  <meta property="og:description" content="サムネイルを見ながらタグを選ぶだけで、画像生成用のプロンプトを組み立てられる無料ツール。シーンディレクターで背景・衣装・ポーズを自動で組み合わせることもできます。ブラウザだけで動き、登録は不要です。" />
-  <meta property="og:image" content="https://k4ow13gt-eng.github.io/tagtelier/ogp.png" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="Tagtelier の画面。タグのサムネイル一覧とシーンの構成選択。" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Tagtelier｜画像生成プロンプトをタグで組み立てる" />
-  <meta name="twitter:description" content="サムネイルを見ながらタグを選ぶだけで、画像生成用のプロンプトを組み立てられる無料ツール。シーンディレクターで背景・衣装・ポーズを自動で組み合わせることもできます。ブラウザだけで動き、登録は不要です。" />
-  <meta name="twitter:image" content="https://k4ow13gt-eng.github.io/tagtelier/ogp.png" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<!--
+  旧アドレス（GitHub Pages）のトップ。2026-09-11に無料Web版を app.tagtelier.com へ移した。
+  設計＝Ob_Claude/Decisions/2026-09-11-web版をCloudflareへ移行.md
+
+  🔴 秒数は 0 のままにする。Googleは「0秒の meta refresh」を恒久的リダイレクトとして扱い、
+     遅延があると一時的リダイレクト扱いに落ちる（公式・2026-09-11確認）。
+     「案内を数秒見せてから飛ばす」に変えないこと。
+  🔴 noindex やクロール拒否を付けない（転送そのものが読まれなくなる）。
+  🔴 このページは消さない。BOOTHで配ったタグ図鑑・公開済みのnote記事・Xの過去投稿に
+     旧URLが残っており、それらは直せない。
+-->
+<meta http-equiv="refresh" content="0; url=https://app.tagtelier.com/" />
+<link rel="canonical" href="https://app.tagtelier.com/" />
+<title>Tagtelier｜新しいアドレスへ移動しました</title>
+<!-- 旧URLが貼られている投稿からも、新しいアドレスのカードが出るようにする -->
+<meta name="description" content="Tagtelier 無料Web版は https://app.tagtelier.com/ へ移動しました。" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Tagtelier" />
+<meta property="og:locale" content="ja_JP" />
+<meta property="og:url" content="https://app.tagtelier.com/" />
+<meta property="og:title" content="Tagtelier｜画像生成プロンプトをタグで組み立てる" />
+<meta property="og:description" content="サムネイルを見ながらタグを選ぶだけで、画像生成用のプロンプトを組み立てられる無料ツール。ブラウザだけで動き、登録は不要です。" />
+<meta property="og:image" content="https://app.tagtelier.com/ogp.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Tagtelier｜画像生成プロンプトをタグで組み立てる" />
+<meta name="twitter:image" content="https://app.tagtelier.com/ogp.png" />
+<style>
+  body { font-family: system-ui, "Segoe UI", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+         margin: 0; padding: 40px 16px; background: #14161a; color: #e6e8ec; line-height: 1.9; }
+  main { max-width: 620px; margin: 0 auto; }
+  h1 { font-size: 20px; margin: 0 0 20px; }
+  p { font-size: 14px; margin: 0 0 14px; }
+  a { color: #8ab4ff; }
+  .big { font-size: 16px; }
+</style>
 </head>
 <body>
-  <div id="app"></div>
+<main>
+  <h1>Tagtelier 無料Web版は、新しいアドレスへ移動しました</h1>
+  <p class="big"><a href="https://app.tagtelier.com/">https://app.tagtelier.com/</a></p>
+  <p>自動で移動します。移動しない場合は上のリンクを押してください。</p>
+  <p>以前このアドレスで使っていた設定やタグは、新しいアドレスの画面に出る
+    「引き継ぐ」から取り込めます（設定 &gt; 以前のアドレスからの引き継ぎ でもできます）。
+    うまくいかないときは <a href="./migrate.html">こちらのページ</a> からファイルに書き出せます。</p>
+</main>
 </body>
 </html>
